@@ -44,19 +44,11 @@ contract VMTest is Test {
     /// @dev Should return msg.sender
     function test_shouldReturnMsgSender() public {
         bytes32 command1 = WeirollPlanner.buildCommand(
-            Sender.sender.selector,
-            0x00,
-            bytes6(0xff0000000000),
-            bytes1(0x01),
-            address(sender__)
+            Sender.sender.selector, 0x00, bytes6(0xff0000000000), bytes1(0x01), address(sender__)
         );
 
         bytes32 command2 = WeirollPlanner.buildCommand(
-            Events.logAddress.selector,
-            0x01,
-            bytes6(0x01ff00000000),
-            bytes1(0xff),
-            address(events__)
+            Events.logAddress.selector, 0x01, bytes6(0x01ff00000000), bytes1(0xff), address(events__)
         );
 
         bytes32[] memory commands = new bytes32[](2);
@@ -73,20 +65,11 @@ contract VMTest is Test {
 
     /// @dev Should execute a simple addition program
     function test_shouldExecuteAddition() public {
-        bytes32 command1 = WeirollPlanner.buildCommand(
-            Math.add.selector,
-            0x01,
-            bytes6(0x0001ff000000),
-            bytes1(0x02),
-            address(math__)
-        );
+        bytes32 command1 =
+            WeirollPlanner.buildCommand(Math.add.selector, 0x01, bytes6(0x0001ff000000), bytes1(0x02), address(math__));
 
         bytes32 command2 = WeirollPlanner.buildCommand(
-            Events.logUint.selector,
-            0x01,
-            bytes6(0x02ff00000000),
-            bytes1(0xff),
-            address(events__)
+            Events.logUint.selector, 0x01, bytes6(0x02ff00000000), bytes1(0xff), address(events__)
         );
 
         bytes32[] memory commands = new bytes32[](2);
@@ -106,28 +89,18 @@ contract VMTest is Test {
     /// @dev Should execute a string length program
     function test_shouldExecuteStringLength() public {
         bytes32 command1 = WeirollPlanner.buildCommand(
-            Strings.strlen.selector,
-            0x01,
-            bytes6(0x80ff00000000),
-            bytes1(0x01),
-            address(strings__)
+            Strings.strlen.selector, 0x01, bytes6(0x80ff00000000), bytes1(0x01), address(strings__)
         );
 
         bytes32 command2 = WeirollPlanner.buildCommand(
-            Events.logUint.selector,
-            0x01,
-            bytes6(0x01ff00000000),
-            bytes1(0xff),
-            address(events__)
+            Events.logUint.selector, 0x01, bytes6(0x01ff00000000), bytes1(0xff), address(events__)
         );
 
         bytes32[] memory commands = new bytes32[](2);
         commands[0] = command1;
         commands[1] = command2;
 
-        bytes memory inputString = WeirollPlanner.stringToBytes(
-            "Hello, world!"
-        );
+        bytes memory inputString = WeirollPlanner.stringToBytes("Hello, world!");
 
         bytes[] memory state = new bytes[](2);
         state[0] = inputString;
@@ -141,19 +114,11 @@ contract VMTest is Test {
     /// @dev Should concatenate two strings
     function test_shouldConcatenateStrings() public {
         bytes32 command1 = WeirollPlanner.buildCommand(
-            Strings.strcat.selector,
-            0x01,
-            bytes6(0x8081ff000000),
-            bytes1(0x82),
-            address(strings__)
+            Strings.strcat.selector, 0x01, bytes6(0x8081ff000000), bytes1(0x82), address(strings__)
         );
 
         bytes32 command2 = WeirollPlanner.buildCommand(
-            Events.logString.selector,
-            0x01,
-            bytes6(0x82ff00000000),
-            bytes1(0xff),
-            address(events__)
+            Events.logString.selector, 0x01, bytes6(0x82ff00000000), bytes1(0xff), address(events__)
         );
 
         bytes32[] memory commands = new bytes32[](2);
@@ -175,20 +140,11 @@ contract VMTest is Test {
 
     /// @dev Should sum an array of uints
     function test_shouldSumArrayOfUints() public {
-        bytes32 command1 = WeirollPlanner.buildCommand(
-            Math.sum.selector,
-            0x01,
-            bytes6(0x80ff00000000),
-            bytes1(0x01),
-            address(math__)
-        );
+        bytes32 command1 =
+            WeirollPlanner.buildCommand(Math.sum.selector, 0x01, bytes6(0x80ff00000000), bytes1(0x01), address(math__));
 
         bytes32 command2 = WeirollPlanner.buildCommand(
-            Events.logUint.selector,
-            0x01,
-            bytes6(0x01ff00000000),
-            bytes1(0xff),
-            address(events__)
+            Events.logUint.selector, 0x01, bytes6(0x01ff00000000), bytes1(0xff), address(events__)
         );
 
         bytes32[] memory commands = new bytes32[](2);
@@ -196,14 +152,7 @@ contract VMTest is Test {
         commands[1] = command2;
 
         bytes[] memory state = new bytes[](2);
-        state[0] = abi.encode(
-            uint256(5),
-            uint256(1),
-            uint256(2),
-            uint256(3),
-            uint256(4),
-            uint256(5)
-        );
+        state[0] = abi.encode(uint256(5), uint256(1), uint256(2), uint256(3), uint256(4), uint256(5));
 
         vm.expectEmit();
         emit Events.LogUint(15);
@@ -214,27 +163,15 @@ contract VMTest is Test {
     /// @dev Should execute payable function
     function test_shouldExecutePayableFunction() public payable {
         bytes32 command1 = WeirollPlanner.buildCommand(
-            Payable.pay.selector,
-            0x03,
-            bytes6(0x00ff00000000),
-            bytes1(0xff),
-            address(payable__)
+            Payable.pay.selector, 0x03, bytes6(0x00ff00000000), bytes1(0xff), address(payable__)
         );
 
         bytes32 command2 = WeirollPlanner.buildCommand(
-            Payable.balance.selector,
-            0x01,
-            bytes6(0xff0000000000),
-            bytes1(0x01),
-            address(payable__)
+            Payable.balance.selector, 0x01, bytes6(0xff0000000000), bytes1(0x01), address(payable__)
         );
 
         bytes32 command3 = WeirollPlanner.buildCommand(
-            Events.logUint.selector,
-            0x01,
-            bytes6(0x01ff00000000),
-            bytes1(0xff),
-            address(events__)
+            Events.logUint.selector, 0x01, bytes6(0x01ff00000000), bytes1(0xff), address(events__)
         );
 
         bytes32[] memory commands = new bytes32[](3);
@@ -254,19 +191,11 @@ contract VMTest is Test {
     /// @dev Should pass and return raw state to functions
     function test_shouldPassAndReturnRawStateToFunctions() public {
         bytes32 command1 = WeirollPlanner.buildCommand(
-            StateTest.addSlots.selector,
-            0x01,
-            bytes6(0x000102feffff),
-            bytes1(0xfe),
-            address(stateTest__)
+            StateTest.addSlots.selector, 0x01, bytes6(0x000102feffff), bytes1(0xfe), address(stateTest__)
         );
 
         bytes32 command2 = WeirollPlanner.buildCommand(
-            Events.logUint.selector,
-            0x01,
-            bytes6(0x00ffffffffff),
-            bytes1(0xff),
-            address(events__)
+            Events.logUint.selector, 0x01, bytes6(0x00ffffffffff), bytes1(0xff), address(events__)
         );
 
         bytes32[] memory commands = new bytes32[](2);
@@ -291,27 +220,15 @@ contract VMTest is Test {
         token__.transfer(address(vm__), 10 ether);
 
         bytes32 command1 = WeirollPlanner.buildCommand(
-            SimpleToken.transfer.selector,
-            0x01,
-            bytes6(0x0001ff000000),
-            bytes1(0xff),
-            address(token__)
+            SimpleToken.transfer.selector, 0x01, bytes6(0x0001ff000000), bytes1(0xff), address(token__)
         );
 
         bytes32 command2 = WeirollPlanner.buildCommand(
-            SimpleToken.balanceOf.selector,
-            0x01,
-            bytes6(0x00ff00000000),
-            bytes1(0x02),
-            address(token__)
+            SimpleToken.balanceOf.selector, 0x01, bytes6(0x00ff00000000), bytes1(0x02), address(token__)
         );
 
         bytes32 command3 = WeirollPlanner.buildCommand(
-            Events.logUint.selector,
-            0x01,
-            bytes6(0x02ff00000000),
-            bytes1(0xff),
-            address(events__)
+            Events.logUint.selector, 0x01, bytes6(0x02ff00000000), bytes1(0xff), address(events__)
         );
 
         bytes32[] memory commands = new bytes32[](3);
@@ -332,11 +249,7 @@ contract VMTest is Test {
     /// @dev Should propagate revert reasons
     function test_shouldPropagateRevertReason() public {
         bytes32 command1 = WeirollPlanner.buildCommand(
-            Revert.fail.selector,
-            0x01,
-            bytes6(0xff0000000000),
-            bytes1(0xff),
-            address(revert__)
+            Revert.fail.selector, 0x01, bytes6(0xff0000000000), bytes1(0xff), address(revert__)
         );
 
         bytes32[] memory commands = new bytes32[](1);
@@ -344,14 +257,7 @@ contract VMTest is Test {
 
         bytes[] memory state = new bytes[](0);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                VM.ExecutionFailed.selector,
-                0,
-                address(revert__),
-                "Hello World!"
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(VM.ExecutionFailed.selector, 0, address(revert__), "Hello World!"));
 
         vm__.execute(commands, state);
     }

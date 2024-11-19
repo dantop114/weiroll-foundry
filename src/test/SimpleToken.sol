@@ -9,10 +9,7 @@ contract SimpleToken is ERC20 {
         _mint(msg.sender, initialSupply);
     }
 
-    function transfer(
-        address to,
-        uint256 amount
-    ) public override returns (bool) {
+    function transfer(address to, uint256 amount) public override returns (bool) {
         return super.transfer(to, amount);
     }
 
@@ -32,15 +29,7 @@ contract SimpleToken is ERC20 {
         return 18;
     }
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override {}
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal override {}
 
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override {}
+    function _afterTokenTransfer(address from, address to, uint256 amount) internal override {}
 }

@@ -14,9 +14,7 @@ contract Math {
         return a * b;
     }
 
-    function sum(
-        uint256[] calldata values
-    ) external pure returns (uint256 ret) {
+    function sum(uint256[] calldata values) external pure returns (uint256 ret) {
         uint256 valuesLength = values.length;
         for (uint256 i; i < valuesLength; ++i) {
             ret += values[i];

@@ -6,10 +6,7 @@ contract Strings {
         return bytes(x).length;
     }
 
-    function strcat(
-        string calldata a,
-        string calldata b
-    ) external pure returns (string memory) {
+    function strcat(string calldata a, string calldata b) external pure returns (string memory) {
         return string(abi.encodePacked(a, b));
     }
 }

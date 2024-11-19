@@ -26,27 +26,15 @@ contract TuplerTest is Test {
     /// @dev Should perform a tuple return that's sliced before being fed to another function (first var)
     function test_tupler1() public {
         bytes32 command1 = WeirollPlanner.buildCommand(
-            MultiReturn.intTuple.selector,
-            0x41,
-            bytes6(0xff0000000000),
-            bytes1(0x00),
-            address(multiReturn__)
+            MultiReturn.intTuple.selector, 0x41, bytes6(0xff0000000000), bytes1(0x00), address(multiReturn__)
         );
 
         bytes32 command2 = WeirollPlanner.buildCommand(
-            LibTupler.extractElement.selector,
-            0x01,
-            bytes6(0x8001ff000000),
-            bytes1(0x00),
-            address(libTupler__)
+            LibTupler.extractElement.selector, 0x01, bytes6(0x8001ff000000), bytes1(0x00), address(libTupler__)
         );
 
         bytes32 command3 = WeirollPlanner.buildCommand(
-            MultiReturn.tupleConsumer.selector,
-            0x01,
-            bytes6(0x00ffffffffff),
-            bytes1(0xff),
-            address(multiReturn__)
+            MultiReturn.tupleConsumer.selector, 0x01, bytes6(0x00ffffffffff), bytes1(0xff), address(multiReturn__)
         );
 
         bytes32[] memory commands = new bytes32[](3);
@@ -67,27 +55,15 @@ contract TuplerTest is Test {
     /// @dev Should perform a tuple return that's sliced before being fed to another function (second var)
     function test_tupler2() public {
         bytes32 command1 = WeirollPlanner.buildCommand(
-            MultiReturn.intTuple.selector,
-            0x41,
-            bytes6(0xff0000000000),
-            bytes1(0x00),
-            address(multiReturn__)
+            MultiReturn.intTuple.selector, 0x41, bytes6(0xff0000000000), bytes1(0x00), address(multiReturn__)
         );
 
         bytes32 command2 = WeirollPlanner.buildCommand(
-            LibTupler.extractElement.selector,
-            0x01,
-            bytes6(0x8001ff000000),
-            bytes1(0x00),
-            address(libTupler__)
+            LibTupler.extractElement.selector, 0x01, bytes6(0x8001ff000000), bytes1(0x00), address(libTupler__)
         );
 
         bytes32 command3 = WeirollPlanner.buildCommand(
-            MultiReturn.tupleConsumer.selector,
-            0x01,
-            bytes6(0x00ffffffffff),
-            bytes1(0xff),
-            address(multiReturn__)
+            MultiReturn.tupleConsumer.selector, 0x01, bytes6(0x00ffffffffff), bytes1(0xff), address(multiReturn__)
         );
 
         bytes32[] memory commands = new bytes32[](3);

@@ -87,11 +87,7 @@ contract Events {
     /// @param topic The topic
     /// @param indexed0 The first indexed value
     /// @param indexed1 The second indexed value
-    function logTopic(
-        bytes32 topic,
-        bytes32 indexed0,
-        bytes32 indexed1
-    ) external {
+    function logTopic(bytes32 topic, bytes32 indexed0, bytes32 indexed1) external {
         // solhint-disable-next-line no-inline-assembly
         assembly ("memory-safe") {
             log3(0x00, 0x00, topic, indexed0, indexed1)
@@ -103,12 +99,7 @@ contract Events {
     /// @param indexed0 The first indexed value
     /// @param indexed1 The second indexed value
     /// @param indexed2 The third indexed value
-    function logTopic(
-        bytes32 topic,
-        bytes32 indexed0,
-        bytes32 indexed1,
-        bytes32 indexed2
-    ) external {
+    function logTopic(bytes32 topic, bytes32 indexed0, bytes32 indexed1, bytes32 indexed2) external {
         // solhint-disable-next-line no-inline-assembly
         assembly ("memory-safe") {
             log4(0x00, 0x00, topic, indexed0, indexed1, indexed2)
