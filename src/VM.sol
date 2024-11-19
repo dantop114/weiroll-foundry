@@ -14,6 +14,7 @@ abstract contract VM {
     uint256 constant FLAG_CT_STATICCALL = 0x02;
     uint256 constant FLAG_CT_VALUECALL = 0x03;
     uint256 constant FLAG_CT_MASK = 0x03;
+    uint256 constant FLAG_VERBATIM = 0x20;
     uint256 constant FLAG_EXTENDED_COMMAND = 0x40;
     uint256 constant FLAG_TUPLE_RETURN = 0x80;
 
@@ -53,29 +54,35 @@ abstract contract VM {
             if (flags & FLAG_CT_MASK == FLAG_CT_DELEGATECALL) {
                 (success, outdata) = address(uint160(uint256(command))).delegatecall( // target
                     // inputs
-                    state.buildInputs(
-                        //selector
-                        bytes4(command),
-                        indices
-                    )
+                    flags & FLAG_VERBATIM == 0
+                        ? state.buildInputs(
+                            //selector
+                            bytes4(command),
+                            indices
+                        )
+                        : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK]
                 );
             } else if (flags & FLAG_CT_MASK == FLAG_CT_CALL) {
                 (success, outdata) = address(uint160(uint256(command))).call( // target
-                    // inputs
-                    state.buildInputs(
-                        //selector
-                        bytes4(command),
-                        indices
-                    )
+                    flags & FLAG_VERBATIM == 0
+                        // inputs
+                        ? state.buildInputs(
+                            //selector
+                            bytes4(command),
+                            indices
+                        )
+                        : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK]
                 );
             } else if (flags & FLAG_CT_MASK == FLAG_CT_STATICCALL) {
                 (success, outdata) = address(uint160(uint256(command))).staticcall( // target
                     // inputs
-                    state.buildInputs(
-                        //selector
-                        bytes4(command),
-                        indices
-                    )
+                    flags & FLAG_VERBATIM == 0
+                        ? state.buildInputs(
+                            //selector
+                            bytes4(command),
+                            indices
+                        )
+                        : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK]
                 );
             } else if (flags & FLAG_CT_MASK == FLAG_CT_VALUECALL) {
                 uint256 calleth;
@@ -92,11 +99,13 @@ abstract contract VM {
                     value: calleth
                 }(
                     // inputs
-                    state.buildInputs(
-                        //selector
-                        bytes4(command),
-                        bytes32(uint256(indices << 8) | CommandBuilder.IDX_END_OF_ARGS)
-                    )
+                    flags & FLAG_VERBATIM == 0
+                        ? state.buildInputs(
+                            //selector
+                            bytes4(command),
+                            bytes32(uint256(indices << 8) | CommandBuilder.IDX_END_OF_ARGS)
+                        )
+                        : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK]
                 );
             } else {
                 revert InvalidCallType();
