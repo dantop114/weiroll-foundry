@@ -1,4 +1,4 @@
-## weiroll-foundry
+# weiroll-foundry
 
 Weiroll is a simple and efficient operation-chaining/scripting language for the EVM.
 
@@ -12,10 +12,6 @@ This repository aims at providing an up-to-date implementation of the [Weiroll V
 - Use `mcopy` instead of identity precompile for copying memory. [GH-3](https://github.com/dantop114/weiroll-foundry/pull/3)
 
 ## Documentation
-
-# Weiroll
-
-Weiroll is a simple and efficient operation-chaining/scripting language for the EVM.
 
 ## Overview
 
@@ -31,7 +27,7 @@ This simple architecture makes it possible for the output of one operation to be
 
 Each command is a `bytes32` containing the following fields (MSB first):
 
-```
+```text
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 ┌───────┬─┬───────────┬─┬───────────────────────────────────────┐
@@ -49,10 +45,10 @@ Each command is a `bytes32` containing the following fields (MSB first):
 
 The 1-byte flags argument `f` has the following field structure:
 
-```
+```text
   0   1   2   3   4   5   6   7
 ┌───┬───┬───────────────┬────────┐
-│tup│ext│   reserved    │calltype│
+│tup│ext│ver│ reserved  │calltype│
 └───┴───┴───────────────┴────────┘
 ```
 
@@ -60,11 +56,13 @@ If `tup` is set, the return for this command will be assigned to the state slot 
 
 The `ext` bit signifies that this is an extended command, and as such the next command should be treated as 32-byte `in` list of indices, rather than the 6-byte list in the packed command struct.
 
-Bits 2-5 are reserved for future use.
+If the `ver` bit is set the calldata for the function call will be assigned from the state slot directly, without any attempt at encoding it. Note that when using this flag, only the first byte of the `in` list is used, and the rest of the list is ignored.
+
+Bits 3-5 are reserved for future use.
 
 The 2-bit `calltype` is treated as a `uint16` that specifies the type of call. The value that selects the corresponding call type is described in the table below:
 
-```
+```text
    ┌──────┬───────────────────┐
    │ 0x00 │  DELEGATECALL     │
    ├──────┼───────────────────┤
@@ -82,22 +80,22 @@ If `calltype` equals `CALL with value`, then the first argument in the `in` inpu
 
 Each 1-byte argument specifier value describes how each input or output argument should be treated, and has the following fields (MSB first):
 
-```
+```text
   0   1   2   3   4   5   6   7
 ┌───┬───────────────────────────┐
 │var│           idx             │
 └───┴───────────────────────────┘
 ```
 
-The `var` flag indicates if the indexed value should be treated as fixed- or variable-length. If `var == 0b0`, the argument is fixed-length, and `idx`, is treated as the index into the state array at which the value is located. The state entry at that index must be exactly 32 bytes long.
+The `var` flag indicates if the indexed value should be treated as fixed- or variable-length. If `var == 0b0`, the argument is fixed-length, and `idx`, is treated as the index into the state array at which the value is located. The state entry at that index must be exactly 32 bytes long (this is not checked if the `ver` flag is set as the state slot is used as is).
 
-If `var == 0b10000000`, the indexed value is treated as variable-length, and `idx` is treated as the index into the state array at which the value is located. The value must be a multiple of 32 bytes long.
+If `var == 0b10000000`, the indexed value is treated as variable-length, and `idx` is treated as the index into the state array at which the value is located. The value must be a multiple of 32 bytes long (this is not checked if the `ver` flag is set as the state slot is used as is).
 
 The vm handles the "head" part of ABI-encoding and decoding for variable-length values, so the state elements for these should be the "tail" part of the encoding - for example, a string encodes as a 32 byte length field followed by the string data, padded to a 32-byte boundary, and an array of `uint`s is a 32 byte count followed by the concatenation of all the uints.
 
 There are two special values `idx` can equal to which modify the encoder behavior, specified in the below table:
 
-```
+```text
    ┌──────┬───────────────────┐
    │ 0xfe │  USE_STATE        │
    ├──────┼───────────────────┤
