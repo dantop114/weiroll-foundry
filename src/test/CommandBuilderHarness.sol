@@ -25,7 +25,7 @@ contract CommandBuilderHarness {
 
     function testBuildInputs(bytes[] memory state, bytes4 selector, bytes32 indices)
         public
-        view
+        pure
         returns (bytes memory)
     {
         bytes memory input = state.buildInputs(selector, indices);
@@ -35,7 +35,7 @@ contract CommandBuilderHarness {
 
     function testWriteOutputs(bytes[] memory state, bytes1 index, bytes memory output)
         public
-        view
+        pure
         returns (bytes[] memory, bytes memory)
     {
         state = state.writeOutputs(index, output);

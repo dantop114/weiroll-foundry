@@ -23,7 +23,7 @@ library CommandBuilder {
     /// @dev Build the input data for a call.
     function buildInputs(bytes[] memory state, bytes4 selector, bytes32 indices)
         internal
-        view
+        pure
         returns (bytes memory ret)
     {
         uint256 count; // Number of bytes in whole ABI encoded message
@@ -143,11 +143,12 @@ library CommandBuilder {
     }
 
     /// @dev Write a tuple to the state.
-    function writeTuple(bytes[] memory state, bytes1 index, bytes memory output) internal view {
+    function writeTuple(bytes[] memory state, bytes1 index, bytes memory output) internal pure {
         uint256 idx = uint256(uint8(index));
         if (idx == IDX_END_OF_ARGS) return;
 
         bytes memory entry = state[idx] = new bytes(output.length + 32);
+
         memcpy(output, 0, entry, 32, output.length);
         assembly {
             let l := mload(output)
@@ -156,9 +157,9 @@ library CommandBuilder {
     }
 
     /// @dev Copy memory from one location to another.
-    function memcpy(bytes memory src, uint256 srcidx, bytes memory dest, uint256 destidx, uint256 len) internal view {
+    function memcpy(bytes memory src, uint256 srcidx, bytes memory dest, uint256 destidx, uint256 len) internal pure {
         assembly {
-            pop(staticcall(gas(), 4, add(add(src, 32), srcidx), len, add(add(dest, 32), destidx), len))
+            mcopy(add(add(dest, 32), destidx), add(add(src, 32), srcidx), len)
         }
     }
 }
