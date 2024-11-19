@@ -23,6 +23,10 @@ abstract contract VM {
 
     error ExecutionFailed(uint256 command_index, address target, string message);
 
+    error ValueCallHasNoValue();
+
+    error InvalidCallType();
+
     constructor() {
         self = address(this);
     }
@@ -76,7 +80,11 @@ abstract contract VM {
             } else if (flags & FLAG_CT_MASK == FLAG_CT_VALUECALL) {
                 uint256 calleth;
                 bytes memory v = state[uint8(bytes1(indices))];
-                require(v.length == 32, "_execute: value call has no value indicated.");
+
+                if (v.length != 32) {
+                    revert ValueCallHasNoValue();
+                }
+
                 assembly {
                     calleth := mload(add(v, 0x20))
                 }
@@ -91,7 +99,7 @@ abstract contract VM {
                     )
                 );
             } else {
-                revert("Invalid calltype");
+                revert InvalidCallType();
             }
 
             if (!success) {
