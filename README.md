@@ -7,7 +7,7 @@ This repository aims at providing an up-to-date implementation of the [Weiroll V
 ## Changelog
 
 - Using foundry instead of hardhat for the development environment.
-- Reflect specs for `EXT` and `TUP` flags in the command structure. #1
+- Reflect specs for `EXT` and `TUP` flags in the command structure. [#1](https://github.com/dantop114/weiroll-foundry/pull/1)
 
 ## Documentation
 
