@@ -4,11 +4,10 @@ Weiroll is a simple and efficient operation-chaining/scripting language for the 
 
 This repository aims at providing an up-to-date implementation of the [Weiroll VM](https://github.com/weiroll/weiroll).
 
-
 ## Changelog
 
 - Using foundry instead of hardhat for the development environment.
-
+- Reflect specs for `EXT` and `TUP` flags in the command structure. [GH-1](https://github.com/dantop114/weiroll-foundry/pull/1)
 
 ## Documentation
 
@@ -38,11 +37,11 @@ Each command is a `bytes32` containing the following fields (MSB first):
 └───────┴─┴───────────┴─┴───────────────────────────────────────┘
 ```
 
- - `sel` is the 4-byte function selector to call
- - `f` is a flags byte that specifies calltype, and whether this is an extended command
- - `in` is an array of 1-byte argument specifications described below, for the input arguments
- - `o` is the 1-byte argument specification described below, for the return value
- - `target` is the address to call
+- `sel` is the 4-byte function selector to call
+- `f` is a flags byte that specifies calltype, and whether this is an extended command
+- `in` is an array of 1-byte argument specifications described below, for the input arguments
+- `o` is the 1-byte argument specification described below, for the return value
+- `target` is the address to call
 
 ### Flags
 
@@ -78,7 +77,6 @@ The 2-bit `calltype` is treated as a `uint16` that specifies the type of call. T
 If `calltype` equals `CALL with value`, then the first argument in the `in` input list is taken to be the amount of ETH that will be supplied to the call, and the rest of the arguments are the arguments to the called function, both processed as described below.
 
 ### Input/output list (in/o) format
-
 
 Each 1-byte argument specifier value describes how each input or output argument should be treated, and has the following fields (MSB first):
 
