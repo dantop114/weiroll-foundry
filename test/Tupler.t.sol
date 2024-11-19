@@ -26,7 +26,7 @@ contract TuplerTest is Test {
     /// @dev Should perform a tuple return that's sliced before being fed to another function (first var)
     function test_tupler1() public {
         bytes32 command1 = WeirollPlanner.buildCommand(
-            MultiReturn.intTuple.selector, 0x41, bytes6(0xff0000000000), bytes1(0x00), address(multiReturn__)
+            MultiReturn.intTuple.selector, 0x81, bytes6(0xff0000000000), bytes1(0x00), address(multiReturn__)
         );
 
         bytes32 command2 = WeirollPlanner.buildCommand(
@@ -55,7 +55,7 @@ contract TuplerTest is Test {
     /// @dev Should perform a tuple return that's sliced before being fed to another function (second var)
     function test_tupler2() public {
         bytes32 command1 = WeirollPlanner.buildCommand(
-            MultiReturn.intTuple.selector, 0x41, bytes6(0xff0000000000), bytes1(0x00), address(multiReturn__)
+            MultiReturn.intTuple.selector, 0x81, bytes6(0xff0000000000), bytes1(0x00), address(multiReturn__)
         );
 
         bytes32 command2 = WeirollPlanner.buildCommand(
