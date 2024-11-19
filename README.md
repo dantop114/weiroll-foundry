@@ -9,6 +9,7 @@ This repository aims at providing an up-to-date implementation of the [Weiroll V
 - Using foundry instead of hardhat for the development environment.
 - Reflect specs for `EXT` and `TUP` flags in the command structure. [GH-1](https://github.com/dantop114/weiroll-foundry/pull/1)
 - Use custom errors instead of `require` statements. [GH-2](https://github.com/dantop114/weiroll-foundry/pull/2)
+- Use `mcopy` instead of identity precompile for copying memory. [GH-3](https://github.com/dantop114/weiroll-foundry/pull/3)
 
 ## Documentation
 
