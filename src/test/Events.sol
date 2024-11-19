@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: Unlicensed
-pragma solidity 0.8.18;
+pragma solidity 0.8.28;
 
-/// @title EventsHelper
+/// @title Events
 /// @notice Helper contract for emitting events
-contract EventsHelper {
+contract Events {
     /// @notice Emitted when a bytes array is logged
     /// @param data The bytes array
     event LogBytes(bytes data);
+
+    /// @notice Emitted when an address is logged
+    /// @param addr The address
+    event LogAddress(address addr);
 
     /// @notice Emitted when a string is logged
     /// @param message The string
@@ -34,6 +38,12 @@ contract EventsHelper {
     /// @param data The bytes array
     function logBytes(bytes calldata data) external {
         emit LogBytes(data);
+    }
+
+    /// @notice Logs an address
+    /// @param addr The address
+    function logAddress(address addr) external {
+        emit LogAddress(addr);
     }
 
     /// @notice Logs a string

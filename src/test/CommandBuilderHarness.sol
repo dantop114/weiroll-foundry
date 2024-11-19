@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity 0.8.28;
 
 import {CommandBuilder} from "../CommandBuilder.sol";
 
@@ -37,7 +37,7 @@ contract CommandBuilderHarness {
         bytes[] memory state,
         bytes1 index,
         bytes memory output
-    ) public pure returns (bytes[] memory, bytes memory) {
+    ) public view returns (bytes[] memory, bytes memory) {
         state = state.writeOutputs(index, output);
 
         return (state, output);

@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.11;
+pragma solidity 0.8.28;
 
-import "./CommandBuilder.sol";
+import {CommandBuilder} from "./CommandBuilder.sol";
 
-
+/// @title VM
+/// @notice The Weiroll Virtual Machine.
 abstract contract VM {
     using CommandBuilder for bytes[];
 
@@ -16,7 +17,8 @@ abstract contract VM {
     uint256 constant FLAG_EXTENDED_COMMAND = 0x80;
     uint256 constant FLAG_TUPLE_RETURN = 0x40;
 
-    uint256 constant SHORT_COMMAND_FILL = 0x000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+    uint256 constant SHORT_COMMAND_FILL =
+        0x000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
     address immutable self;
 
@@ -30,9 +32,10 @@ abstract contract VM {
         self = address(this);
     }
 
-    function _execute(bytes32[] calldata commands, bytes[] memory state)
-      internal returns (bytes[] memory)
-    {
+    function _execute(
+        bytes32[] calldata commands,
+        bytes[] memory state
+    ) internal returns (bytes[] memory) {
         bytes32 command;
         uint256 flags;
         bytes32 indices;
@@ -41,7 +44,7 @@ abstract contract VM {
         bytes memory outdata;
 
         uint256 commandsLength = commands.length;
-        for (uint256 i; i < commandsLength;) {
+        for (uint256 i; i < commandsLength; ) {
             command = commands[i];
             flags = uint256(uint8(bytes1(command << 32)));
 
@@ -52,7 +55,8 @@ abstract contract VM {
             }
 
             if (flags & FLAG_CT_MASK == FLAG_CT_DELEGATECALL) {
-                (success, outdata) = address(uint160(uint256(command))).delegatecall( // target
+                (success, outdata) = address(uint160(uint256(command)))
+                    .delegatecall( // target
                     // inputs
                     state.buildInputs(
                         //selector
@@ -70,7 +74,8 @@ abstract contract VM {
                     )
                 );
             } else if (flags & FLAG_CT_MASK == FLAG_CT_STATICCALL) {
-                (success, outdata) = address(uint160(uint256(command))).staticcall( // target
+                (success, outdata) = address(uint160(uint256(command)))
+                    .staticcall( // target
                     // inputs
                     state.buildInputs(
                         //selector
@@ -81,7 +86,10 @@ abstract contract VM {
             } else if (flags & FLAG_CT_MASK == FLAG_CT_VALUECALL) {
                 uint256 calleth;
                 bytes memory v = state[uint8(bytes1(indices))];
-                require(v.length == 32, "_execute: value call has no value indicated.");
+                require(
+                    v.length == 32,
+                    "_execute: value call has no value indicated."
+                );
                 assembly {
                     calleth := mload(add(v, 0x20))
                 }
@@ -92,7 +100,10 @@ abstract contract VM {
                     state.buildInputs(
                         //selector
                         bytes4(command),
-                        bytes32(uint256(indices << 8) | CommandBuilder.IDX_END_OF_ARGS)
+                        bytes32(
+                            uint256(indices << 8) |
+                                CommandBuilder.IDX_END_OF_ARGS
+                        )
                     )
                 );
             } else {
@@ -117,7 +128,9 @@ abstract contract VM {
             } else {
                 state = state.writeOutputs(bytes1(command << 88), outdata);
             }
-            unchecked{++i;}
+            unchecked {
+                ++i;
+            }
         }
         return state;
     }
