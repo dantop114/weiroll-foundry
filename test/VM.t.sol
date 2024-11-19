@@ -12,6 +12,7 @@ import {Sender} from "../src/test/Sender.sol";
 import {Revert} from "../src/test/Revert.sol";
 import {Strings} from "../src/test/Strings.sol";
 import {Payable} from "../src/test/Payable.sol";
+import {Fallback} from "../src/test/Fallback.sol";
 import {StateTest} from "../src/test/StateTest.sol";
 import {TestableVM} from "../src/test/TestableVM.sol";
 import {SimpleToken} from "../src/test/SimpleToken.sol";
@@ -24,6 +25,7 @@ contract VMTest is Test {
     Strings strings__;
     Payable payable__;
     SimpleToken token__;
+    Fallback fallback__;
     StateTest stateTest__;
 
     TestableVM vm__;
@@ -37,6 +39,7 @@ contract VMTest is Test {
         revert__ = new Revert();
         strings__ = new Strings();
         payable__ = new Payable();
+        fallback__ = new Fallback();
         stateTest__ = new StateTest();
         token__ = new SimpleToken(100 ether);
     }
@@ -258,6 +261,72 @@ contract VMTest is Test {
         bytes[] memory state = new bytes[](0);
 
         vm.expectRevert(abi.encodeWithSelector(VM.ExecutionFailed.selector, 0, address(revert__), "Hello World!"));
+
+        vm__.execute(commands, state);
+    }
+
+    function test_shouldUseSlotAsCalldataNoValue() public {
+        bytes32 command1 = WeirollPlanner.buildCommand(
+            bytes4(0x00000000), 0x21, bytes6(0x000000000000), bytes1(0xff), address(fallback__)
+        );
+
+        bytes32[] memory commands = new bytes32[](1);
+        commands[0] = command1;
+
+        bytes[] memory state = new bytes[](1);
+        state[0] = abi.encode(0xdeadbeef);
+
+        vm.expectEmit();
+        emit Events.LogBytes(abi.encode(0xdeadbeef));
+
+        vm__.execute(commands, state);
+    }
+
+    function test_shouldUseSlotAsCalldataValue() public {
+        bytes32 command1 = WeirollPlanner.buildCommand(
+            bytes4(0x00000000), 0x23, bytes6(0x000100000000), bytes1(0xff), address(fallback__)
+        );
+
+        bytes32[] memory commands = new bytes32[](1);
+        commands[0] = command1;
+
+        bytes[] memory state = new bytes[](2);
+        state[0] = abi.encode(1 ether);
+        state[1] = abi.encode(0xdeadbeef);
+
+        vm.expectEmit();
+        emit Events.LogUint(1 ether);
+        emit Events.LogBytes(abi.encode(0xdeadbeef));
+
+        vm__.execute{value: 1 ether}(commands, state);
+    }
+
+    function test_shouldUseSlotAsCalldataTokenTransfer() public {
+        bytes32 command1 = WeirollPlanner.buildCommand(
+            bytes4(0x00000000), 0x21, bytes6(0x000000000000), bytes1(0xff), address(token__)
+        );
+
+        bytes32 command2 = WeirollPlanner.buildCommand(
+            SimpleToken.balanceOf.selector, 0x01, bytes6(0x01ff00000000), bytes1(0x02), address(token__)
+        );
+
+        bytes32 command3 = WeirollPlanner.buildCommand(
+            Events.logUint.selector, 0x01, bytes6(0x02ff00000000), bytes1(0xff), address(events__)
+        );
+
+        bytes32[] memory commands = new bytes32[](3);
+        commands[0] = command1;
+        commands[1] = command2;
+        commands[2] = command3;
+
+        bytes[] memory state = new bytes[](3);
+        state[0] = abi.encodeWithSelector(SimpleToken.transfer.selector, address(0xc0ffeeb4b3), 10 ether);
+        state[1] = abi.encode(address(0xc0ffeeb4b3));
+
+        token__.transfer(address(vm__), 10 ether);
+
+        vm.expectEmit();
+        emit Events.LogUint(10 ether);
 
         vm__.execute(commands, state);
     }
