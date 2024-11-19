@@ -8,6 +8,19 @@ library CommandBuilder {
     uint256 constant IDX_END_OF_ARGS = 0xff;
     uint256 constant IDX_USE_STATE = 0xfe;
 
+    /// @dev Dynamic state variables must be a multiple of 32 bytes.
+    error DynamicStateVariableLength();
+
+    /// @dev Static state variables must be 32 bytes.
+    error StaticStateVariableLength();
+
+    /// @dev Only one return value permitted (variable).
+    error MultipleReturnValueVariable();
+
+    /// @dev Only one return value permitted (static).
+    error MultipleReturnValueStatic();
+
+    /// @dev Build the input data for a call.
     function buildInputs(bytes[] memory state, bytes4 selector, bytes32 indices)
         internal
         view
@@ -33,11 +46,11 @@ library CommandBuilder {
                 } else {
                     // Add the size of the value, rounded up to the next word boundary, plus space for pointer and length
                     uint256 arglen = state[idx & IDX_VALUE_MASK].length;
-                    require(arglen % 32 == 0, "Dynamic state variables must be a multiple of 32 bytes");
+                    if (arglen % 32 != 0) revert DynamicStateVariableLength();
                     count += arglen + 32;
                 }
             } else {
-                require(state[idx & IDX_VALUE_MASK].length == 32, "Static state variables must be 32 bytes");
+                if (state[idx & IDX_VALUE_MASK].length != 32) revert StaticStateVariableLength();
                 count += 32;
             }
             unchecked {
@@ -91,6 +104,7 @@ library CommandBuilder {
         }
     }
 
+    /// @dev Write the outputs of a call back to the state.
     function writeOutputs(bytes[] memory state, bytes1 index, bytes memory output)
         internal
         pure
@@ -108,7 +122,8 @@ library CommandBuilder {
                 assembly {
                     argptr := mload(add(output, 32))
                 }
-                require(argptr == 32, "Only one return value permitted (variable)");
+
+                if (argptr != 32) revert MultipleReturnValueVariable();
 
                 assembly {
                     // Overwrite the first word of the return data with the length - 32
@@ -119,7 +134,7 @@ library CommandBuilder {
             }
         } else {
             // Single word
-            require(output.length == 32, "Only one return value permitted (static)");
+            if (output.length != 32) revert MultipleReturnValueStatic();
 
             state[idx & IDX_VALUE_MASK] = output;
         }
@@ -127,6 +142,7 @@ library CommandBuilder {
         return state;
     }
 
+    /// @dev Write a tuple to the state.
     function writeTuple(bytes[] memory state, bytes1 index, bytes memory output) internal view {
         uint256 idx = uint256(uint8(index));
         if (idx == IDX_END_OF_ARGS) return;
@@ -139,6 +155,7 @@ library CommandBuilder {
         }
     }
 
+    /// @dev Copy memory from one location to another.
     function memcpy(bytes memory src, uint256 srcidx, bytes memory dest, uint256 destidx, uint256 len) internal view {
         assembly {
             pop(staticcall(gas(), 4, add(add(src, 32), srcidx), len, add(add(dest, 32), destidx), len))
