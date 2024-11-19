@@ -22,7 +22,7 @@ abstract contract VM {
 
     address immutable self;
 
-    error ExecutionFailed(uint256 command_index, address target, string message);
+    error ExecutionFailed(uint256 commandIndex, address target, string message);
 
     error ValueCallHasNoValue();
 
@@ -52,38 +52,35 @@ abstract contract VM {
             }
 
             if (flags & FLAG_CT_MASK == FLAG_CT_DELEGATECALL) {
-                (success, outdata) = address(uint160(uint256(command))).delegatecall( // target
-                    // inputs
-                    flags & FLAG_VERBATIM == 0
-                        ? state.buildInputs(
-                            //selector
-                            bytes4(command),
-                            indices
-                        )
-                        : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK]
-                );
+                bytes memory inputs = flags & FLAG_VERBATIM == 0
+                    ? state.buildInputs(
+                        //selector
+                        bytes4(command),
+                        indices
+                    )
+                    : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK];
+
+                (success, outdata) = address(uint160(uint256(command))).delegatecall(inputs);
             } else if (flags & FLAG_CT_MASK == FLAG_CT_CALL) {
-                (success, outdata) = address(uint160(uint256(command))).call( // target
-                    flags & FLAG_VERBATIM == 0
-                        // inputs
-                        ? state.buildInputs(
-                            //selector
-                            bytes4(command),
-                            indices
-                        )
-                        : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK]
-                );
+                bytes memory inputs = flags & FLAG_VERBATIM == 0
+                    ? state.buildInputs(
+                        //selector
+                        bytes4(command),
+                        indices
+                    )
+                    : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK];
+
+                (success, outdata) = address(uint160(uint256(command))).call(inputs);
             } else if (flags & FLAG_CT_MASK == FLAG_CT_STATICCALL) {
-                (success, outdata) = address(uint160(uint256(command))).staticcall( // target
-                    // inputs
-                    flags & FLAG_VERBATIM == 0
-                        ? state.buildInputs(
-                            //selector
-                            bytes4(command),
-                            indices
-                        )
-                        : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK]
-                );
+                bytes memory inputs = flags & FLAG_VERBATIM == 0
+                    ? state.buildInputs(
+                        //selector
+                        bytes4(command),
+                        indices
+                    )
+                    : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK];
+
+                (success, outdata) = address(uint160(uint256(command))).staticcall(inputs);
             } else if (flags & FLAG_CT_MASK == FLAG_CT_VALUECALL) {
                 uint256 calleth;
                 bytes memory v = state[uint8(bytes1(indices))];
@@ -95,30 +92,30 @@ abstract contract VM {
                 assembly {
                     calleth := mload(add(v, 0x20))
                 }
-                (success, outdata) = address(uint160(uint256(command))).call{ // target
-                    value: calleth
-                }(
-                    // inputs
-                    flags & FLAG_VERBATIM == 0
-                        ? state.buildInputs(
-                            //selector
-                            bytes4(command),
-                            bytes32(uint256(indices << 8) | CommandBuilder.IDX_END_OF_ARGS)
-                        )
-                        : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK]
-                );
+
+                bytes memory inputs = flags & FLAG_VERBATIM == 0
+                    ? state.buildInputs(
+                        //selector
+                        bytes4(command),
+                        indices
+                    )
+                    : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK];
+
+                (success, outdata) = address(uint160(uint256(command))).call{value: calleth}(inputs);
             } else {
                 revert InvalidCallType();
             }
 
             if (!success) {
-                if (outdata.length > 0) {
+                // If `outdata` is longer than 68 bytes it is most likely an `Error(string)`.
+                if (outdata.length > 68) {
                     assembly {
                         outdata := add(outdata, 68)
                     }
                 }
+
                 revert ExecutionFailed({
-                    command_index: 0,
+                    commandIndex: flags & FLAG_EXTENDED_COMMAND == 0 ? i : i - 1,
                     target: address(uint160(uint256(command))),
                     message: outdata.length > 0 ? string(outdata) : "Unknown"
                 });
