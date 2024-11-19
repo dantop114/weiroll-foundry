@@ -10,6 +10,7 @@ This repository aims at providing an up-to-date implementation of the [Weiroll V
 - Reflect specs for `EXT` and `TUP` flags in the command structure. [GH-1](https://github.com/dantop114/weiroll-foundry/pull/1)
 - Use custom errors instead of `require` statements. [GH-2](https://github.com/dantop114/weiroll-foundry/pull/2)
 - Use `mcopy` instead of identity precompile for copying memory. [GH-3](https://github.com/dantop114/weiroll-foundry/pull/3)
+- Introduce `VERBATIM` flag to use state slot as calldata. [GH-4](https://github.com/dantop114/weiroll-foundry/pull/4)
 
 ## Documentation
 
@@ -56,7 +57,7 @@ If `tup` is set, the return for this command will be assigned to the state slot 
 
 The `ext` bit signifies that this is an extended command, and as such the next command should be treated as 32-byte `in` list of indices, rather than the 6-byte list in the packed command struct.
 
-If the `ver` bit is set the calldata for the function call will be assigned from the state slot directly, without any attempt at encoding it. Note that when using this flag, only the first byte of the `in` list is used, and the rest of the list is ignored.
+If the `ver` (stands for verbatim) bit is set the calldata for the function call will be assigned from the state slot directly, without any attempt at encoding it. Note that when using this flag, only the first byte of the `in` list is used, and the rest of the list is ignored.
 
 Bits 3-5 are reserved for future use.
 
