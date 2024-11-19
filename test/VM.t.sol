@@ -252,15 +252,24 @@ contract VMTest is Test {
     /// @dev Should propagate revert reasons
     function test_shouldPropagateRevertReason() public {
         bytes32 command1 = WeirollPlanner.buildCommand(
+            Events.logUint.selector, 0x01, bytes6(0x00ff00000000), bytes1(0xff), address(events__)
+        );
+
+        bytes32 command2 = WeirollPlanner.buildCommand(
             Revert.fail.selector, 0x01, bytes6(0xff0000000000), bytes1(0xff), address(revert__)
         );
 
-        bytes32[] memory commands = new bytes32[](1);
+        bytes32[] memory commands = new bytes32[](2);
         commands[0] = command1;
+        commands[1] = command2;
 
-        bytes[] memory state = new bytes[](0);
+        bytes[] memory state = new bytes[](1);
+        state[0] = abi.encode(123);
 
-        vm.expectRevert(abi.encodeWithSelector(VM.ExecutionFailed.selector, 0, address(revert__), "Hello World!"));
+        vm.expectEmit();
+        emit Events.LogUint(123);
+
+        vm.expectRevert(abi.encodeWithSelector(VM.ExecutionFailed.selector, 1, address(revert__), "Hello World!"));
 
         vm__.execute(commands, state);
     }
