@@ -35,6 +35,7 @@ library CommandBuilder {
         // Determine the length of the encoded data
         for (uint256 i; i < 32;) {
             idx = uint8(indices[i]);
+
             if (idx == IDX_END_OF_ARGS) break;
 
             if (idx & IDX_VARIABLE_LENGTH != 0) {
@@ -53,6 +54,7 @@ library CommandBuilder {
                 if (state[idx & IDX_VALUE_MASK].length != 32) revert StaticStateVariableLength();
                 count += 32;
             }
+
             unchecked {
                 free += 32;
             }
@@ -63,6 +65,7 @@ library CommandBuilder {
 
         // Encode it
         ret = new bytes(count + 4);
+
         assembly {
             mstore(add(ret, 32), selector)
         }
@@ -74,24 +77,49 @@ library CommandBuilder {
             if (idx & IDX_VARIABLE_LENGTH != 0) {
                 if (idx == IDX_USE_STATE) {
                     assembly {
-                        mstore(add(add(ret, 36), count), free)
+                        mstore(add(add(ret, 0x24), count), free)
+                        let stateDataLen := sub(mload(stateData), 0x20)
+                        mcopy(add(ret, add(free, 0x24)), add(stateData, 0x40), stateDataLen)
+                        free := add(free, sub(stateDataLen, 0x20))
                     }
-                    memcpy(stateData, 32, ret, free + 4, stateData.length - 32);
-                    free += stateData.length - 32;
                 } else {
-                    uint256 arglen = state[idx & IDX_VALUE_MASK].length;
-
                     // Variable length data; put a pointer in the slot and write the data at the end
                     assembly {
-                        mstore(add(add(ret, 36), count), free)
+                        mstore(add(add(ret, 0x24), count), free)
+
+                        // stateIndex = idx & IDX_VALUE_MASK
+                        let stateIndex := and(idx, IDX_VALUE_MASK)
+
+                        if lt(mload(state), stateIndex) {
+                            // Revert with Panic(0x32) if the state index is out of bounds
+                            mstore(0x00, 0x4e487b71)
+                            mstore(0x20, 0x32)
+                            revert(0x1c, 0x24)
+                        }
+
+                        // Get the pointer in the array
+                        let statevar := mload(add(add(state, 0x20), mul(stateIndex, 0x20)))
+                        let arglen := mload(statevar)
+
+                        mcopy(add(ret, add(free, 0x24)), add(statevar, 0x20), arglen)
+
+                        free := add(free, arglen)
                     }
-                    memcpy(state[idx & IDX_VALUE_MASK], 0, ret, free + 4, arglen);
-                    free += arglen;
                 }
             } else {
                 // Fixed length data; write it directly
-                bytes memory statevar = state[idx & IDX_VALUE_MASK];
                 assembly {
+                    let stateIndex := and(idx, IDX_VALUE_MASK)
+
+                    if lt(mload(state), stateIndex) {
+                        // Revert with Panic(0x32) if the state index is out of bounds
+                        mstore(0x00, 0x4e487b71)
+                        mstore(0x20, 0x32)
+                        revert(0x1c, 0x24)
+                    }
+
+                    let statevar := mload(add(add(state, 0x20), mul(stateIndex, 0x20)))
+
                     mstore(add(add(ret, 36), count), mload(add(statevar, 32)))
                 }
             }
@@ -149,17 +177,10 @@ library CommandBuilder {
 
         bytes memory entry = state[idx] = new bytes(output.length + 32);
 
-        memcpy(output, 0, entry, 32, output.length);
         assembly {
+            mcopy(add(add(entry, 0x20), 0x20), add(output, 0x20), mload(output))
             let l := mload(output)
             mstore(add(entry, 32), l)
-        }
-    }
-
-    /// @dev Copy memory from one location to another.
-    function memcpy(bytes memory src, uint256 srcidx, bytes memory dest, uint256 destidx, uint256 len) internal pure {
-        assembly {
-            mcopy(add(add(dest, 32), destidx), add(add(src, 32), srcidx), len)
         }
     }
 }
