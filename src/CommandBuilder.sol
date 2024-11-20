@@ -43,33 +43,43 @@ library CommandBuilder {
                     if (stateData.length == 0) {
                         stateData = abi.encode(state);
                     }
-                    count += stateData.length;
+
+                    unchecked {
+                        count += stateData.length;
+                    }
                 } else {
                     // Add the size of the value, rounded up to the next word boundary, plus space for pointer and length
                     uint256 arglen = state[idx & IDX_VALUE_MASK].length;
                     if (arglen % 32 != 0) revert DynamicStateVariableLength();
-                    count += arglen + 32;
+
+                    unchecked {
+                        count += arglen + 32;
+                    }
                 }
             } else {
                 if (state[idx & IDX_VALUE_MASK].length != 32) revert StaticStateVariableLength();
-                count += 32;
+
+                unchecked {
+                    count += 32;
+                }
             }
 
             unchecked {
                 free += 32;
-            }
-            unchecked {
                 ++i;
             }
         }
 
-        // Encode it
-        ret = new bytes(count + 4);
+        unchecked {
+            ret = new bytes(count + 4);
+        }
 
         assembly {
-            mstore(add(ret, 32), selector)
+            mstore(add(ret, 0x20), selector)
         }
+
         count = 0;
+
         for (uint256 i; i < 32;) {
             idx = uint8(indices[i]);
             if (idx == IDX_END_OF_ARGS) break;
@@ -90,6 +100,7 @@ library CommandBuilder {
                         // stateIndex = idx & IDX_VALUE_MASK
                         let stateIndex := and(idx, IDX_VALUE_MASK)
 
+                        // TODO: maybe we can get rid of this? Need to check.
                         if lt(mload(state), stateIndex) {
                             // Revert with Panic(0x32) if the state index is out of bounds
                             mstore(0x00, 0x4e487b71)
@@ -111,6 +122,7 @@ library CommandBuilder {
                 assembly {
                     let stateIndex := and(idx, IDX_VALUE_MASK)
 
+                    // TODO: maybe we can get rid of this? Need to check.
                     if lt(mload(state), stateIndex) {
                         // Revert with Panic(0x32) if the state index is out of bounds
                         mstore(0x00, 0x4e487b71)
