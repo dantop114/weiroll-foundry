@@ -100,7 +100,6 @@ library CommandBuilder {
                         // stateIndex = idx & IDX_VALUE_MASK
                         let stateIndex := and(idx, IDX_VALUE_MASK)
 
-                        // TODO: maybe we can get rid of this? Need to check.
                         if lt(mload(state), stateIndex) {
                             // Revert with Panic(0x32) if the state index is out of bounds
                             mstore(0x00, 0x4e487b71)
@@ -122,7 +121,6 @@ library CommandBuilder {
                 assembly {
                     let stateIndex := and(idx, IDX_VALUE_MASK)
 
-                    // TODO: maybe we can get rid of this? Need to check.
                     if lt(mload(state), stateIndex) {
                         // Revert with Panic(0x32) if the state index is out of bounds
                         mstore(0x00, 0x4e487b71)
@@ -157,26 +155,53 @@ library CommandBuilder {
             if (idx == IDX_USE_STATE) {
                 state = abi.decode(output, (bytes[]));
             } else {
-                // Check the first field is 0x20 (because we have only a single return value)
-                uint256 argptr;
                 assembly {
-                    argptr := mload(add(output, 32))
-                }
+                    let sizeptr := add(output, 0x20)
+                    let argptr := mload(sizeptr)
 
-                if (argptr != 32) revert MultipleReturnValueVariable();
+                    if iszero(eq(argptr, 0x20)) {
+                        // Revert with MultipleReturnValueVariable()
+                        mstore(0x00, 0x082da2ea)
+                        revert(0x1c, 0x04)
+                    }
 
-                assembly {
                     // Overwrite the first word of the return data with the length - 32
-                    mstore(add(output, 32), sub(mload(output), 32))
+                    mstore(sizeptr, sub(mload(output), 0x20))
+
+                    let stateIndex := and(idx, IDX_VALUE_MASK)
+
+                    if lt(mload(state), stateIndex) {
+                        // Revert with Panic(0x32) if the state index is out of bounds
+                        mstore(0x00, 0x4e487b71)
+                        mstore(0x20, 0x32)
+                        revert(0x1c, 0x24)
+                    }
+
                     // Insert a pointer to the return data, starting at the second word, into state
-                    mstore(add(add(state, 32), mul(and(idx, IDX_VALUE_MASK), 32)), add(output, 32))
+                    mstore(add(add(state, 0x20), mul(stateIndex, 0x20)), sizeptr)
                 }
             }
         } else {
             // Single word
-            if (output.length != 32) revert MultipleReturnValueStatic();
+            assembly {
+                if iszero(eq(mload(output), 0x20)) {
+                    // Revert with MultipleReturnValueStatic()
+                    mstore(0x00, 0x43990615)
+                    revert(0x1c, 0x04)
+                }
 
-            state[idx & IDX_VALUE_MASK] = output;
+                let stateIndex := and(idx, IDX_VALUE_MASK)
+
+                if lt(mload(state), stateIndex) {
+                    // Revert with Panic(0x32) if the state index is out of bounds
+                    mstore(0x00, 0x4e487b71)
+                    mstore(0x20, 0x32)
+                    revert(0x1c, 0x24)
+                }
+
+                // Insert the return data into state
+                mstore(add(add(state, 0x20), mul(stateIndex, 0x20)), output)
+            }
         }
 
         return state;
