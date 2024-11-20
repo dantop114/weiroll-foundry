@@ -33,7 +33,7 @@ library CommandBuilder {
         uint256 idx;
 
         // Determine the length of the encoded data
-        for (uint256 i = 0; i < 32;) {
+        for (uint256 i; i < 32;) {
             idx = uint8(indices[i]);
 
             if (idx == IDX_END_OF_ARGS) break;
@@ -80,7 +80,7 @@ library CommandBuilder {
 
         count = 0;
 
-        for (uint256 i = 0; i < 32;) {
+        for (uint256 i; i < 32;) {
             idx = uint8(indices[i]);
             if (idx == IDX_END_OF_ARGS) break;
 
