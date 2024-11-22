@@ -108,7 +108,7 @@ library CommandBuilder {
                         }
 
                         // Get the pointer in the array
-                        let statevar := mload(add(add(state, 0x20), mul(stateIndex, 0x20)))
+                        let statevar := mload(add(add(state, 0x20), shl(0x5, stateIndex)))
                         let arglen := mload(statevar)
 
                         mcopy(add(ret, add(free, 0x24)), add(statevar, 0x20), arglen)
@@ -178,7 +178,7 @@ library CommandBuilder {
                     }
 
                     // Insert a pointer to the return data, starting at the second word, into state
-                    mstore(add(add(state, 0x20), mul(stateIndex, 0x20)), sizeptr)
+                    mstore(add(add(state, 0x20), shl(0x5, stateIndex)), sizeptr)
                 }
             }
         } else {
@@ -200,7 +200,7 @@ library CommandBuilder {
                 }
 
                 // Insert the return data into state
-                mstore(add(add(state, 0x20), mul(stateIndex, 0x20)), output)
+                mstore(add(add(state, 0x20), shl(0x5, stateIndex)), output)
             }
         }
 
