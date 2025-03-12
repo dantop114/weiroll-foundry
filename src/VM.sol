@@ -9,7 +9,6 @@ import {CommandBuilder} from "./CommandBuilder.sol";
 abstract contract VM {
     using CommandBuilder for bytes[];
 
-    uint256 constant FLAG_CT_DELEGATECALL = 0x00;
     uint256 constant FLAG_CT_CALL = 0x01;
     uint256 constant FLAG_CT_STATICCALL = 0x02;
     uint256 constant FLAG_CT_VALUECALL = 0x03;
@@ -20,17 +19,11 @@ abstract contract VM {
 
     uint256 constant SHORT_COMMAND_FILL = 0x000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
-    address immutable self;
-
     error ExecutionFailed(uint256 commandIndex, address target, string message);
 
     error ValueCallHasNoValue();
 
     error InvalidCallType();
-
-    constructor() {
-        self = address(this);
-    }
 
     function _execute(bytes32[] calldata commands, bytes[] memory state) internal returns (bytes[] memory) {
         bytes32 command;
@@ -51,17 +44,7 @@ abstract contract VM {
                 indices = bytes32(uint256(command << 40) | SHORT_COMMAND_FILL);
             }
 
-            if (flags & FLAG_CT_MASK == FLAG_CT_DELEGATECALL) {
-                bytes memory inputs = flags & FLAG_VERBATIM == 0
-                    ? state.buildInputs(
-                        //selector
-                        bytes4(command),
-                        indices
-                    )
-                    : state[uint8(bytes1(indices)) & CommandBuilder.IDX_VALUE_MASK];
-
-                (success, outdata) = address(uint160(uint256(command))).delegatecall(inputs);
-            } else if (flags & FLAG_CT_MASK == FLAG_CT_CALL) {
+            if (flags & FLAG_CT_MASK == FLAG_CT_CALL) {
                 bytes memory inputs = flags & FLAG_VERBATIM == 0
                     ? state.buildInputs(
                         //selector
