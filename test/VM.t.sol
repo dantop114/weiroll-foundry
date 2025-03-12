@@ -47,7 +47,7 @@ contract VMTest is Test {
     /// @dev Should return msg.sender
     function test_shouldReturnMsgSender() public {
         bytes32 command1 = WeirollPlanner.buildCommand(
-            Sender.sender.selector, 0x00, bytes6(0xff0000000000), bytes1(0x01), address(sender__)
+            Sender.sender.selector, 0x01, bytes6(0xff0000000000), bytes1(0x01), address(sender__)
         );
 
         bytes32 command2 = WeirollPlanner.buildCommand(
@@ -61,7 +61,7 @@ contract VMTest is Test {
         bytes[] memory state = new bytes[](2);
 
         vm.expectEmit();
-        emit Events.LogAddress(address(this));
+        emit Events.LogAddress(address(vm__));
 
         vm__.execute(commands, state);
     }
