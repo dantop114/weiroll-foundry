@@ -11,8 +11,7 @@ This repository aims at providing an up-to-date implementation of the [Weiroll V
 - Use custom errors instead of `require` statements. [GH-2](https://github.com/dantop114/weiroll-foundry/pull/2)
 - Use `mcopy` instead of identity precompile for copying memory. [GH-3](https://github.com/dantop114/weiroll-foundry/pull/3)
 - Introduce `VERBATIM` flag to use state slot as calldata. [GH-4](https://github.com/dantop114/weiroll-foundry/pull/4)
-- Remove `FLAG_CT_DELEGATECALL` flag. [GH-5](https://github.com/dantop114/weiroll-foundry/pull/5)
-- Remove `self` from the VM constructor. [GH-5](https://github.com/dantop114/weiroll-foundry/pull/5)
+- Remove `FLAG_CT_DELEGATECALL` flag. [GH-11](https://github.com/dantop114/weiroll-foundry/pull/11)
 
 ## Documentation
 
