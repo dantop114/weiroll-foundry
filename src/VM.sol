@@ -39,7 +39,7 @@ abstract contract VM {
             flags = uint256(uint8(bytes1(command << 32)));
 
             if (flags & FLAG_EXTENDED_COMMAND != 0) {
-                indices = commands[i++];
+                indices = commands[++i];
             } else {
                 indices = bytes32(uint256(command << 40) | SHORT_COMMAND_FILL);
             }
